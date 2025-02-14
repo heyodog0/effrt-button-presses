@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .question-container {
+            width: 100%;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .choice-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .choice-button {
+            flex: 1;
+            padding: 20px;
+            border: 2px solid #2196F3;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .choice-button:hover {
+            background: #e3f2fd;
+        }
+
+        .choice-button.selected {
+            background: #2196F3;
+            color: white;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #eee;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #2196F3;
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+
+        .next-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none;
+        }
+
+        .next-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Preference Assessment</h2>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div id="questionContainer" class="question-container">
+            <!-- Questions will be inserted here -->
+        </div>
+        <button id="nextButton" class="next-button" onclick="handleNext()">Next</button>
+    </div>
+
+    <script>
+        // Questions array with effort-related scenarios
+        const questions = [
+            {
+                id: 1,
+                question: "Which would you prefer?",
+                choices: [
+                    "Complete a difficult task now for a larger reward",
+                    "Complete an easy task now for a smaller reward"
+                ],
+                context: "Time: Immediate, Effort: High vs Low"
+            },
+            {
+                id: 2,
+                question: "Which option would you choose?",
+                choices: [
+                    "Work intensely for 2 hours with frequent breaks",
+                    "Work moderately for 3 hours with no breaks"
+                ],
+                context: "Effort distribution preference"
+            },
+            {
+                id: 3,
+                question: "Which scenario do you prefer?",
+                choices: [
+                    "High effort task with guaranteed reward",
+                    "Low effort task with uncertain reward"
+                ],
+                context: "Risk vs Effort trade-off"
+            },
+            {
+                id: 4,
+                question: "Which would you rather do?",
+                choices: [
+                    "Complex task with detailed instructions",
+                    "Simple task with minimal guidance"
+                ],
+                context: "Cognitive load preference"
+            },
+            {
+                id: 5,
+                question: "Which approach do you prefer?",
+                choices: [
+                    "Short, intense bursts of effort",
+                    "Sustained, moderate effort"
+                ],
+                context: "Effort intensity preference"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let responses = [];
+        let selectedChoice = null;
+
+        function displayQuestion() {
+            const question = questions[currentQuestionIndex];
+            const container = document.getElementById('questionContainer');
+            const progressFill = document.getElementById('progressFill');
+            
+            // Update progress bar
+            const progress = ((currentQuestionIndex) / questions.length) * 100;
+            progressFill.style.width = `${progress}%`;
+
+            // Create question HTML
+            container.innerHTML = `
+                <h3>${question.question}</h3>
+                <div class="choice-container">
+                    <button class="choice-button" onclick="selectChoice(0)">${question.choices[0]}</button>
+                    <button class="choice-button" onclick="selectChoice(1)">${question.choices[1]}</button>
+                </div>
+            `;
+
+            // Reset selected choice
+            selectedChoice = null;
+            document.getElementById('nextButton').style.display = 'none';
+        }
+
+        function selectChoice(choiceIndex) {
+            selectedChoice = choiceIndex;
+            
+            // Update button styles
+            const buttons = document.querySelectorAll('.choice-button');
+            buttons.forEach((button, index) => {
+                button.classList.toggle('selected', index === choiceIndex);
+            });
+
+            // Show next button
+            document.getElementById('nextButton').style.display = 'block';
+        }
+
+        function handleNext() {
+            if (selectedChoice === null) return;
+
+            // Store response
+            responses.push({
+                questionId: questions[currentQuestionIndex].id,
+                response: selectedChoice,
+                context: questions[currentQuestionIndex].context
+            });
+
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < questions.length) {
+                displayQuestion();
+            } else {
+                completeAssessment();
+            }
+        }
+
+        function completeAssessment() {
+            // Store responses
+            localStorage.setItem('preferenceResponses', JSON.stringify(responses));
+            
+            // Display completion message
+            const container = document.getElementById('questionContainer');
+            container.innerHTML = `
+                <h3>Assessment Complete</h3>
+                <p>Thank you for completing the preference assessment.</p>
+            `;
+            
+            // Update progress bar to 100%
+            document.getElementById('progressFill').style.width = '100%';
+            
+            // Hide next button
+            document.getElementById('nextButton').style.display = 'none';
+
+            // Log responses (for development)
+            console.log('Responses:', responses);
+        }
+
+        // Start the assessment
+        displayQuestion();
+    </script>
+</body>
+</html>

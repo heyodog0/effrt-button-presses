@@ -1,0 +1,27 @@
+
+.timer {
+    font-size: 24px;
+    margin: 20px 0;
+}
+
+.press-count {
+    font-size: 20px;
+    margin: 10px 0;
+}
+
+.attention-check {
+    margin: 20px 0;
+}
+
+.subsection {
+    width: 100%;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: none;
+}
+
+.subsection.active {
+    display: block;
+}

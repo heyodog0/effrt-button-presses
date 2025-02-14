@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .section {
+            width: 100%;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .timer {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+
+        .press-count {
+            font-size: 20px;
+            margin: 10px 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .attention-check {
+            margin: 20px 0;
+        }
+
+        .feedback {
+            color: #d32f2f;
+            margin-top: 10px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Welcome Section -->
+        <div id="welcome" class="section active">
+            <h2>Welcome to the Experiment</h2>
+            <p>This experiment will help us understand human behavior and decision making.</p>
+            <p>The experiment consists of several parts:</p>
+            <ol>
+                <li>Instructions and attention checks</li>
+                <li>Calibration of your space bar pressing speed</li>
+                <li>The main task</li>
+            </ol>
+            <button onclick="nextSection('welcome', 'instructions')">Continue</button>
+        </div>
+
+        <!-- Instructions Section -->
+        <div id="instructions" class="section">
+            <h2>Instructions</h2>
+            <p>Please read these instructions carefully. There will be attention checks.</p>
+            <div class="attention-check">
+                <p>Attention Check 1: What key will you be using in this experiment?</p>
+                <select id="attentionCheck1">
+                    <option value="">Select your answer</option>
+                    <option value="enter">Enter key</option>
+                    <option value="space">Space bar</option>
+                    <option value="shift">Shift key</option>
+                </select>
+                <div id="feedback1" class="feedback">Incorrect. Please read the instructions again.</div>
+            </div>
+            <button onclick="checkAttention()">Continue</button>
+        </div>
+
+        <!-- Calibration Section -->
+        <div id="calibration" class="section">
+            <h2>Calibration</h2>
+            <p>We need to measure your maximum space bar pressing speed.</p>
+            <p>When you click 'Start Calibration', you'll have 10 seconds to press the space bar as many times as you can.</p>
+            <div class="timer" id="timer">Time: 10s</div>
+            <div class="press-count" id="pressCount">Presses: 0</div>
+            <button id="calibrationButton" onclick="startCalibration()">Start Calibration</button>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="section">
+            <h2>Calibration Results</h2>
+            <p>Your maximum pressing speed: <span id="maxSpeed">0</span> presses per second</p>
+            <button onclick="startMainTask()">Start Main Task</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSection = 'welcome';
+        let pressCount = 0;
+        let calibrationActive = false;
+        let calibrationTimer;
+        let maxSpeed = 0;
+
+        function nextSection(current, next) {
+            document.getElementById(current).classList.remove('active');
+            document.getElementById(next).classList.add('active');
+            currentSection = next;
+        }
+
+        function checkAttention() {
+            const answer1 = document.getElementById('attentionCheck1').value;
+            const feedback1 = document.getElementById('feedback1');
+
+            if (answer1 === 'space') {
+                nextSection('instructions', 'calibration');
+                feedback1.style.display = 'none';
+            } else {
+                feedback1.style.display = 'block';
+            }
+        }
+
+        function startCalibration() {
+            const button = document.getElementById('calibrationButton');
+            const timerDisplay = document.getElementById('timer');
+            const pressDisplay = document.getElementById('pressCount');
+            
+            button.disabled = true;
+            pressCount = 0;
+            calibrationActive = true;
+            
+            let timeLeft = 10;
+            
+            calibrationTimer = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = `Time: ${timeLeft}s`;
+                
+                if (timeLeft <= 0) {
+                    endCalibration();
+                }
+            }, 1000);
+        }
+
+        function endCalibration() {
+            clearInterval(calibrationTimer);
+            calibrationActive = false;
+            maxSpeed = pressCount / 10; // presses per second
+            
+            document.getElementById('maxSpeed').textContent = maxSpeed.toFixed(2);
+            nextSection('calibration', 'results');
+        }
+
+        function startMainTask() {
+            // Store the maxSpeed value and transition to the main task
+            localStorage.setItem('maxPressSpeed', maxSpeed);
+            // Redirect to main task or trigger main task start
+            console.log('Starting main task with max speed:', maxSpeed);
+        }
+
+        // Space bar event listener
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && calibrationActive) {
+                e.preventDefault();
+                pressCount++;
+                document.getElementById('pressCount').textContent = `Presses: ${pressCount}`;
+            }
+        });
+    </script>
+</body>
+</html>

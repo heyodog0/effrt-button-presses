@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Effort Study</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/calibration.css">
+    <link rel="stylesheet" href="css/game.css">
+    <link rel="stylesheet" href="css/preferences.css">
+</head>
+<body>
+    <div id="app-container">
+        <!-- Calibration Section -->
+        <section id="calibration-section" class="section active">
+            <div class="container">
+                <!-- Welcome Section -->
+                <div id="welcome" class="subsection active">
+                    <h2>Welcome to the Experiment</h2>
+                    <p>This experiment will help us understand human behavior and decision making.</p>
+                    <p>The experiment consists of several parts:</p>
+                    <ol>
+                        <li>Instructions and attention checks</li>
+                        <li>Calibration of your space bar pressing speed</li>
+                        <li>Preference assessment</li>
+                        <li>The main task</li>
+                    </ol>
+                    <button onclick="nextSubsection('welcome', 'instructions')">Continue</button>
+                </div>
+
+                <!-- Instructions Section -->
+                <div id="instructions" class="subsection">
+                    <h2>Instructions</h2>
+                    <p>Please read these instructions carefully. There will be attention checks.</p>
+                    <div class="attention-check">
+					    <p>Attention Check 1: What key will you be using in this experiment?</p>
+					    <div class="radio-group">
+					        <div class="radio-option">
+					            <input type="radio" id="enter" name="attentionCheck1" value="enter">
+					            <label for="enter">Enter key</label>
+					        </div>
+					        <div class="radio-option">
+					            <input type="radio" id="space" name="attentionCheck1" value="space">
+					            <label for="space">Space bar</label>
+					        </div>
+					        <div class="radio-option">
+					            <input type="radio" id="shift" name="attentionCheck1" value="shift">
+					            <label for="shift">Shift key</label>
+					        </div>
+					    </div>
+					    <div id="feedback1" class="feedback">Incorrect. Please read the instructions again.</div>
+					</div>
+                    <button onclick="checkAttention()">Continue</button>
+                </div>
+
+                <!-- Calibration Section -->
+                <div id="calibration" class="subsection">
+                    <h2>Calibration</h2>
+                    <p>We need to measure your maximum space bar pressing speed.</p>
+                    <p>When you click 'Start Calibration', you'll have 10 seconds to press the space bar as many times as you can.</p>
+                    <div class="timer" id="timer">Time: 10s</div>
+                    <div class="press-count" id="pressCount">Presses: 0</div>
+                    <button id="calibrationButton" onclick="startCalibration()">Start Calibration</button>
+                </div>
+
+                <!-- Calibration Results -->
+                <div id="calibration-results" class="subsection">
+                    <h2>Calibration Results</h2>
+                    <p>Your maximum pressing speed: <span id="maxSpeed">0</span> presses per second</p>
+                    <button onclick="completeCalibration()">Continue to Preferences</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Preferences Section -->
+        <section id="preferences-section" class="section">
+            <div class="container">
+                <h2>Preference Assessment</h2>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div id="questionContainer" class="question-container">
+                    <!-- Questions will be inserted here -->
+                </div>
+                <button id="nextButton" class="next-button" onclick="handleNext()">Next</button>
+            </div>
+        </section>
+
+        <!-- Game Section -->
+        <section id="game-section" class="section">
+            <div class="container">
+                <div id="progress-container">
+                    <div id="progress-bar"></div>
+                </div>
+                <div class="progress-text">Progress: <span id="progress-value">0</span>%</div>
+                <button id="game-button">Start Game</button>
+                <div id="instructions">Click Start to begin</div>
+            </div>
+        </section>
+    </div>
+
+    <script src="js/questions.js"></script>
+    <script src="js/preferences.js"></script>
+    <script src="js/calibration.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

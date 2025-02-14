@@ -1,0 +1,57 @@
+#progress-container {
+    width: 400px;
+    height: 30px;
+    background: #eee;
+    border-radius: 15px;
+    overflow: hidden;
+    margin: 20px 0;
+}
+
+#progress-bar {
+    width: 0%;
+    height: 100%;
+    background: #4CAF50;
+    transition: width 0.2s ease-out;
+}
+
+#game-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+#game-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+#instructions {
+    color: #666;
+    margin: 10px 0;
+}
+
+.choice-button {
+    padding: 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background: white;
+    color: #333;
+    border: 2px solid #2196F3;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.choice-button:hover {
+    background: #e3f2fd;
+    color: #1976D2;
+}
+
+.progress-text {
+    font-size: 18px;
+    margin: 10px 0;
+}
