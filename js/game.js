@@ -8,6 +8,9 @@ let currentTrial = 0;
 const totalTrials = 5;
 let currentEffortLevel = null;
 let totalReward = 0;
+let gameTimer = null;
+const GAME_TIME_LIMIT = 10000; // 10 seconds in milliseconds
+let startTime = null;
 
 const rewardAmounts = {
     'high': 10,
@@ -15,6 +18,12 @@ const rewardAmounts = {
 };
 
 function resetForNewEffortChoice() {
+    // Clear any existing timer
+    if (gameTimer) {
+        clearTimeout(gameTimer);
+        gameTimer = null;
+    }
+    
     // Reset game state
     isActive = false;
     isComplete = false;
@@ -47,11 +56,13 @@ function initializeGame() {
     const container = document.querySelector('#game-section .container');
     
     container.innerHTML = `
-        <div id="trial-counter" style="text-align: center; margin-bottom: 20px; display: none;">
-            Trial <span id="current-trial">1</span> of ${totalTrials}
-        </div>
-        <div id="total-reward" style="text-align: center; margin-bottom: 20px; display: none;">
-            Total Reward: $<span id="reward-amount">0</span>
+        <div class="game-info-container">
+            <div id="trial-counter" style="display: none;">
+                Trial <span id="current-trial">1</span> of ${totalTrials}
+            </div>
+            <div id="total-reward" style="display: none;">
+                Total Reward: $<span id="reward-amount">0</span>
+            </div>
         </div>
         <div id="progress-container" style="display: none;">
             <div id="progress-bar"></div>
@@ -93,6 +104,10 @@ function initializeGame() {
 function selectEffort(effortLevel) {
     console.log("Effort level selected:", effortLevel);
     const maxSpeed = parseFloat(localStorage.getItem('maxPressSpeed')) || 5;
+    
+    // Calculate increment amount based on calibration
+    // We want the task to take ~8-10 seconds
+    // Hard = 75% of max speed, Easy = 45% of max speed
     const effortMultiplier = effortLevel === 'high' ? 0.85 : 0.45;
     incrementAmount = 2 * (5 / maxSpeed) * (1 / effortMultiplier);
     
@@ -124,7 +139,10 @@ function updateProgress(newProgress) {
     const progressBar = document.getElementById('progress-bar');
     const progressValue = document.getElementById('progress-value');
     
-    progressBar.style.width = `${progress}%`;
+    // Update for circular progress
+    const size = Math.min(progress, 100);
+    progressBar.style.width = `${size}%`;
+    progressBar.style.height = `${size}%`;
     progressValue.textContent = Math.round(progress);
 
     if (progress >= maxProgress) {
@@ -147,6 +165,9 @@ function startGame() {
     gameButton.disabled = true;
     gameButton.textContent = 'In Progress';
     instructions.textContent = 'Press SPACE repeatedly to fill the bar!';
+
+    // Record start time
+    startTime = Date.now();
 }
 
 function completeGame() {
@@ -158,27 +179,47 @@ function completeGame() {
     const instructions = document.getElementById('instructions');
     const rewardFeedback = document.getElementById('reward-feedback');
     
-    // Update reward
-    const reward = rewardAmounts[currentEffortLevel];
+    // Calculate completion time
+    const completionTime = Date.now() - startTime;
+    const tookTooLong = completionTime > GAME_TIME_LIMIT;
+    
+    // Calculate reward
+    let reward;
+    if (currentEffortLevel === 'high') {
+        if (progress >= maxProgress && !tookTooLong) {
+            // Completed high effort task successfully within time limit
+            reward = rewardAmounts['high'];
+        } else {
+            // Either failed to complete or took too long
+            reward = rewardAmounts['low'];
+        }
+    } else {
+        // Low effort task always gets low reward
+        reward = rewardAmounts['low'];
+    }
+    
     totalReward += reward;
     document.getElementById('reward-amount').textContent = totalReward;
     
-    // Show reward feedback
-    rewardFeedback.textContent = `You earned $${reward} this trial!`;
+    // Show appropriate feedback message
+    let feedbackMessage;
+    if (currentEffortLevel === 'high' && progress >= maxProgress) {
+        feedbackMessage = tookTooLong 
+            ? `Completed too slowly. You earned $${reward} this trial.`
+            : `You earned $${reward} this trial!`;
+    } else {
+        feedbackMessage = `You earned $${reward} this trial!`;
+    }
+    rewardFeedback.textContent = feedbackMessage;
     rewardFeedback.style.display = 'block';
     
     if (currentTrial < totalTrials) {
-        // Update trial counter
         document.getElementById('current-trial').textContent = currentTrial + 1;
-        
         gameButton.disabled = false;
         gameButton.textContent = 'Start Next Trial';
         instructions.textContent = `Trial ${currentTrial} complete! Click to start next trial.`;
     } else {
-        // Reset for new set of trials
         resetForNewEffortChoice();
-        
-        // Show effort selection again
         document.querySelector('.effort-selection').style.display = 'block';
         document.getElementById('progress-container').style.display = 'none';
         document.querySelector('.progress-text').style.display = 'none';
@@ -199,6 +240,8 @@ function completeGame() {
                 trial: currentTrial,
                 reward: reward,
                 totalReward: totalReward,
+                completionTime: completionTime,
+                tookTooLong: tookTooLong,
                 timestamp: Date.now()
             }
         }

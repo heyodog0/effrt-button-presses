@@ -36,11 +36,22 @@ function startCalibration() {
     pressCount = 0;
     calibrationActive = true;
     
-    let timeLeft = 10;
+    // Add starting animation
+    timerDisplay.style.animation = 'countUpdate 0.3s ease';
+    
+    let timeLeft = 20;
+    
+    // Update the display with more engaging text
+    timerDisplay.innerHTML = `<span style="color: #2563eb">${timeLeft}</span> seconds left!`;
+    pressDisplay.textContent = `Rapid Presses: ${pressCount}`;
     
     calibrationTimer = setInterval(() => {
         timeLeft--;
-        timerDisplay.textContent = `Time: ${timeLeft}s`;
+        // Add urgency to the timer display
+        if (timeLeft <= 5) {
+            timerDisplay.style.color = '#dc2626';
+        }
+        timerDisplay.innerHTML = `<span style="color: ${timeLeft <= 5 ? '#dc2626' : '#2563eb'}">${timeLeft}</span> seconds left!`;
         
         if (timeLeft <= 0) {
             endCalibration();
@@ -51,10 +62,21 @@ function startCalibration() {
 function endCalibration() {
     clearInterval(calibrationTimer);
     calibrationActive = false;
-    maxSpeed = pressCount / 10; // presses per second
+    maxSpeed = pressCount / 20;
     
-    document.getElementById('maxSpeed').textContent = maxSpeed.toFixed(2);
+    localStorage.setItem('maxPressSpeed', maxSpeed.toString());
+    
+    // Add more engaging results display
+    const speedDisplay = document.getElementById('maxSpeed');
+    speedDisplay.textContent = `${maxSpeed.toFixed(2)} presses/second`;
+    
+    // Animate the transition
     nextSubsection('calibration', 'calibration-results');
+    
+    // Add celebration effect if the speed is good (optional)
+    if (maxSpeed > 5) {
+        speedDisplay.style.color = '#059669'; // Green color for good performance
+    }
 }
 
 function completeCalibration() {
@@ -77,7 +99,13 @@ document.addEventListener('keydown', (e) => {
         e.preventDefault();
         spaceKeyDown = true;
         pressCount++;
-        document.getElementById('pressCount').textContent = `Presses: ${pressCount}`;
+        const pressDisplay = document.getElementById('pressCount');
+        pressDisplay.textContent = `Rapid Presses: ${pressCount}`;
+        
+        // Add visual feedback for each press
+        pressDisplay.classList.remove('updated');
+        void pressDisplay.offsetWidth; // Trigger reflow
+        pressDisplay.classList.add('updated');
     }
 });
 
